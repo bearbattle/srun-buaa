@@ -36,8 +36,8 @@ var cmdDocs = map[string][]string{
 	"config": {"srun config", "Set Username and Password"},
 	"login":  {"srun [login]", "Login Srun"},
 	"logout": {"srun logout", "Logout Srun"},
-	"info":   {"srun info", "Get Srun Info"},
-	"update": {"srun update", "Update srun"},
+	"info":   {"srun info", "Get Srun Info, NOT COMPATIBLE FOR BUAA"},
+	"update": {"srun update", "Update srun, NOT COMPATIBLE FOR BUAA"},
 }
 
 func main() {

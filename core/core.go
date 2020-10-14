@@ -121,6 +121,7 @@ var reg, _ = regexp.Compile(`index_[\d]\.html`)
 
 // get acid
 func getAcid() (acid int, err error) {
+	// 不知道acid是什么，似乎保持为1是可以用的
 	return 1, nil
 	//	res, err := http.Get(demoUrl)
 	//	if err != nil {
