@@ -1,27 +1,28 @@
 package core
 
 import (
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
 	"github.com/vouv/srun/hash"
 	"github.com/vouv/srun/model"
 	"github.com/vouv/srun/resp"
 	"github.com/vouv/srun/utils"
-	"io/ioutil"
-	"net/http"
+	//	"io/ioutil"
+	//	"net/http"
 	"net/url"
 	"regexp"
-	"strconv"
-	"strings"
+	//	"strconv"
+	//	"strings"
 )
 
 const (
 	demoUrl = "http://t.cn"
 
-	challengeUrl = "http://10.0.0.55/cgi-bin/get_challenge"
-	portalUrl    = "http://10.0.0.55/cgi-bin/srun_portal"
+	challengeUrl = "http://gw.buaa.edu.cn/cgi-bin/get_challenge"
+	portalUrl    = "http://gw.buaa.edu.cn/cgi-bin/srun_portal"
 
-	succeedUrlOrigin = "http://10.0.0.55/srun_portal_pc_succeed.php"
+	succeedUrlOrigin = "gw.buaa.edu.cn/srun_portal_success"
 )
 
 // api Login
@@ -36,6 +37,7 @@ func Login(account *model.Account) (result model.QInfo, err error) {
 	if err != nil {
 		log.Debug("get acid error:", err)
 		err = ErrConnected
+		fmt.Println("get acid failed")
 		return
 	}
 
@@ -119,21 +121,22 @@ var reg, _ = regexp.Compile(`index_[\d]\.html`)
 
 // get acid
 func getAcid() (acid int, err error) {
-	res, err := http.Get(demoUrl)
-	if err != nil {
-		return 1, ErrConnected
-	}
-	bs, _ := ioutil.ReadAll(res.Body)
-
-	data := string(bs)
-	if strings.Contains(data, "10.0.0.5") && reg.MatchString(data) {
-		res := reg.FindString(data)
-		acids := strings.TrimRight(strings.TrimLeft(res, "index_"), ".html")
-		acid, _ = strconv.Atoi(acids)
-		log.Debug("Acid:", acid)
-		return acid, nil
-	}
-	return 1, ErrConnected
+	return 1, nil
+	//	res, err := http.Get(demoUrl)
+	//	if err != nil {
+	//		return 1, ErrConnected
+	//	}
+	//	bs, _ := ioutil.ReadAll(res.Body)
+	//
+	//	data := string(bs)
+	//	if strings.Contains(data, "gw.buaa.edu.cn") && reg.MatchString(data) {
+	//		res := reg.FindString(data)
+	//		acids := strings.TrimRight(strings.TrimLeft(res, "index_"), ".html")
+	//		acid, _ = strconv.Atoi(acids)
+	//		log.Debug("Acid:", acid)
+	//		return acid, nil
+	//	}
+	//	return 1, ErrConnected
 }
 
 func getChallenge(username string) (res resp.Challenge, err error) {
