@@ -2,94 +2,86 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/vouv/srun/core"
-	"github.com/vouv/srun/pkg/term"
-	"github.com/vouv/srun/store"
 	"io"
 	"os"
 	"runtime"
 	"strings"
+
+	"github.com/moby/moby/pkg/term"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/vouv/srun/core"
+	"github.com/vouv/srun/store"
 )
 
-var ErrReadAccount = errors.New("读取账号文件错误, 请执行`srun config`配置账号信息")
-
-type Func func(cmd string, params ...string)
-
-var DefaultClient = &Client{}
-
-type Client struct{}
-
-// 登录
-func (s *Client) Login(cmd string, params ...string) {
-	account, gErr := store.ReadAccount()
-	if gErr != nil {
-		log.Error(ErrReadAccount.Error())
-		log.Debug(gErr)
-		os.Exit(1)
+func Login(cmd *cobra.Command, args []string) {
+	err := LoginE(cmd, args)
+	if err != nil {
+		log.Error(err)
 	}
+}
 
+func LoginE(cmd *cobra.Command, args []string) error {
+	account, err := store.ReadAccount()
+	if err != nil {
+		return err
+	}
 	log.Info("尝试登录...")
 
-	//username = model.AddSuffix(username, server)
-	info, err := core.Login(&account)
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
+	if err = core.Login(account); err != nil {
+		return err
 	}
 	log.Info("登录成功!")
-	log.Info("在线IP: ", info.ClientIp)
 
-	err = store.SetInfo(info.AccessToken, info.ClientIp)
+	return store.WriteAccount(account)
+}
+
+func Logout(cmd *cobra.Command, args []string) {
+	err := LogoutE(cmd, args)
 	if err != nil {
 		log.Error(err)
-		os.Exit(1)
 	}
 }
 
-func (s *Client) Logout(cmd string, params ...string) {
-	if len(params) == 0 {
-		var err error
-		account, err := store.ReadAccount()
-		if err != nil {
-			log.Error(ErrReadAccount.Error())
-			log.Debug(err)
-			os.Exit(1)
-		}
-		if err = core.Logout(account.Username); err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
-		log.Info("注销成功!")
-	} else {
-		s.CmdList()
+func LogoutE(cmd *cobra.Command, args []string) error {
+	var err error
+	account, err := store.ReadAccount()
+	if err != nil {
+		return err
+	}
+
+	_ = core.Logout(account)
+
+	log.Info("注销成功!")
+
+	return store.WriteAccount(account)
+}
+
+func Info(cmd *cobra.Command, args []string) {
+	err := InfoE(cmd, args)
+	if err != nil {
+		log.Error(err)
 	}
 }
 
-func (s *Client) GetInfo(cmd string, params ...string) {
-	if len(params) == 0 {
-		var err error
-		account, err := store.ReadAccount()
-		if err != nil {
-			log.Error(ErrReadAccount.Error())
-			log.Debug(err)
-			os.Exit(1)
-		}
-		log.Info("当前校园网登录账号:", account.Username)
-		res, err := core.Info(account)
-		if err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
-		fmt.Println(res.String())
-	} else {
-		s.CmdList()
+func InfoE(cmd *cobra.Command, args []string) error {
+	info, err := core.Info()
+	if err != nil {
+		return err
+	}
+	fmt.Println(info.String())
+	return nil
+}
+
+func Config(cmd *cobra.Command, args []string) {
+	err := ConfigE(cmd, args)
+	if err != nil {
+		log.Error(err)
 	}
 }
 
-func (Client) SetAccount(cmd string, params ...string) {
+func ConfigE(cmd *cobra.Command, args []string) error {
 
 	in := os.Stdin
 	fmt.Print("设置校园网账号:\n>")
@@ -99,10 +91,9 @@ func (Client) SetAccount(cmd string, params ...string) {
 	fd, _ := term.GetFdInfo(in)
 	oldState, err := term.SaveState(fd)
 	if err != nil {
-		log.Error(err)
-		os.Exit(1)
+		return err
 	}
-	fmt.Print("设置校园网密码:\n>")
+	fmt.Print("设置校园网密码(隐私输入):\n>")
 
 	// read in stdin
 	_ = term.DisableEcho(fd, oldState)
@@ -116,10 +107,10 @@ func (Client) SetAccount(cmd string, params ...string) {
 	pwd = strings.TrimSpace(pwd)
 
 	if err := store.SetAccount(username, pwd); err != nil {
-		log.Error(err)
-		os.Exit(1)
+		return err
 	}
 	log.Info("账号密码已被保存")
+	return nil
 }
 
 func readInput(in io.Reader) string {
@@ -131,47 +122,15 @@ func readInput(in io.Reader) string {
 	return string(line)
 }
 
-func (Client) ShowVersion() {
-	fmt.Println("System:")
-	fmt.Printf("\tOS:%s ARCH:%s GOVERSION:%s\n", runtime.GOOS, runtime.GOARCH, runtime.Version())
-	fmt.Println("About:")
-	fmt.Printf("\tVersion: %s\n", Version)
-	fmt.Println("\n\t</> with ❤ By vouv")
+func VersionString() string {
+	return fmt.Sprintln("System:") +
+		fmt.Sprintf("\tOS:%s ARCH:%s GO:%s\n", runtime.GOOS, runtime.GOARCH, runtime.Version()) +
+		fmt.Sprintln("About:") +
+		fmt.Sprintf("\tVersion: %s\n", Version) +
+		fmt.Sprintln("\n\t</> with ❤ By vouv")
 }
 
-// srun help [COMMAND]
-func (s *Client) CmdHelp(cmd string, params ...string) {
-	if len(params) == 0 {
-		fmt.Println(s.CmdList())
-	} else {
-		if c, ok := cmdDocs[params[0]]; ok {
-			fmt.Println("Usage: ", c[0])
-		} else {
-			fmt.Println(s.CmdList())
-		}
-	}
-}
-
-func (Client) CmdList() string {
-	sb := &strings.Builder{}
-	sb.WriteString("Srun " + Version + "\r\n")
-	sb.WriteString(fmt.Sprint("\r\nUsage:	srun [OPTIONS] COMMAND \r\n\r\n"))
-
-	sb.WriteString("A efficient client for BIT campus network\r\n\r\n")
-
-	sb.WriteString("Options:\r\n")
-	for k, v := range optionDocs {
-		sb.WriteString(fmt.Sprintf("  %-10s%-20s\r\n", k, v))
-	}
-
-	sb.WriteString("\r\nCommands:\r\n")
-	for k, v := range cmdDocs {
-		sb.WriteString(fmt.Sprintf("  %-10s%-20s\r\n", k, v[1]))
-	}
-	return sb.String()
-}
-
-func (Client) Update(cmd string, params ...string) {
+func Update(cmd string, params ...string) {
 	ok, v, d := HasUpdate()
 	if !ok {
 		log.Info("当前已是最新版本:", Version)

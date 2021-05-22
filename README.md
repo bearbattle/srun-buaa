@@ -1,6 +1,6 @@
 # Srun
 
-[![Build Status](https://travis-ci.org/vouv/srun.svg?branch=master)](https://travis-ci.org/vouv/srun) [![Go Report Card](https://goreportcard.com/badge/github.com/vouv/srun)](https://goreportcard.com/report/github.com/vouv/srun) ![License](https://img.shields.io/packagist/l/doctrine/orm.svg) [![GoDoc](https://godoc.org/github.com/vouv/srun?status.svg)](https://godoc.org/github.com/vouv/srun/core) [![Donate](https://img.shields.io/badge/%24-donate-ff69b4.svg)](https://github.com/vouv/donate)
+[![Build Status](https://travis-ci.org/vouv/srun.svg?branch=master)](https://travis-ci.org/vouv/srun) [![Go Report Card](https://goreportcard.com/badge/github.com/vouv/srun)](https://goreportcard.com/report/github.com/vouv/srun) ![License](https://img.shields.io/packagist/l/doctrine/orm.svg) [![GoDoc](https://godoc.org/github.com/vouv/srun?status.svg)](https://godoc.org/github.com/vouv/srun/core)
 
 > A efficient client for **BUAA** campus network
 
@@ -8,7 +8,76 @@
 - 支持linux、maxOS、windows
 - 基于Go语言实现
 
+Related Projects
+
+- macOS客户端: [SrunBar](https://github.com/vouv/SrunBar)
+
+## Install
+
+1. Homebrew(macOS only)
+
+```bash
+$ brew tap vouv/tap
+$ brew install srun
+$ srun config
+```
+
+2. Curl(for Linux amd64) [Release](https://github.com/vouv/srun/releases/latest)
+
+```bash
+# linux
+$ curl -L -o srun https://github.com/vouv/srun/releases/latest/download/srun-linux
+$ chmod +x ./srun
+$ ./srun config
+```
+
+3. go get
+
+如果已经[安装并配置GO环境](https://golang.google.cn/doc/install), 执行如下命令即可
+
+```bash
+$ go get -u -v github.com/vouv/srun/cmd/srun
+$ $GOPATH/bin/srun config
+```
+
+
+## Usage
+
+### Show Help
+
+```
+$ srun -h
+```
+
+### Config
+
+```
+$ srun config
+```
+
+### Login
+
+```
+$ srun
+$ srun login
+```
+
+### Info
+```
+$ srun info
+```
+
 ## Update Log
+
+2020.12.18
+
+- 自动构建切换到Github Actions
+
+2020.11.3
+
+- 优化新版登录逻辑
+- 优化命令行框架
+- 删除无用代码，优化代码结构
 
 2020.9.6
 
@@ -35,88 +104,6 @@
 
 2018.9.1
 - 实现登录与设置账号的功能
-
-
-## Install
-
-1. go get
-
-如果已经[安装并配置GO环境](https://golang.google.cn/doc/install), 执行如下命令即可
-
-```bash
-go get -u -v github.com/vouv/srun/cmd/srun
-```
-
-开始使用
-```bash
-$GOPATH/bin/srun config
-```
-
-2. Download [Release](https://github.com/vouv/srun/releases/latest)
-
-下载并开始使用
-```bash
-# linux
-curl -L -o srun https://github.com/vouv/srun/releases/latest/download/srun-linux
-chmod +x srun
-./srun config
-```
-
-## Usage
-
-Usage: `srun [OPTIONS] COMMAND`
-
-### Show Help
-
-```
-$ srun -h
-
-Usage:	srun [OPTIONS] COMMAND
-
-A efficient client for BIT campus network
-
-Options:
-  -h        Show help
-  -d        Show debug message
-  -v        Print version information and quit
-
-Commands:
-  login     Login Srun
-  logout    Logout Srun
-  info      Get Srun Info
-  update    Update srun
-  config    Set Username and Password
-
-
-```
-
-### Config
-
-```
-$ srun config
-设置校园网账号:
->vouv
-设置校园网密码:
->
-INFO[2019-12-02 21:30:49] 账号密码已被保存
-
-```
-
-### Login
-
-```
-$ srun login
-INFO[2019-12-02 21:31:17] 尝试登录
-...
-```
-
-### Extra - 查看余额
-```
-$ srun info
-已用流量: 54,418.87M
-已用时长: 366小时38分48秒
-账户余额: ￥19.68
-```
 
 
 ### Contribute
@@ -159,11 +146,11 @@ $ make linux
 - 使用账号快速登录校园网，环境支持的情况下也可以一键登录
 
 
-
 ### Thanks to
 
-- [beego](https://github.com/astaxie/beego)
-- [goquery](https://github.com/PuerkitoBio/goquery)
+- [logrus](https://github.com/sirupsen/logrus)
+- [cobra](https://github.com/spf13/cobra)
+
 
 
 

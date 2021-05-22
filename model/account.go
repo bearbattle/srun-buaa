@@ -9,7 +9,7 @@ type Account struct {
 	Username    string `json:"username,omitempty"`
 	Password    string `json:"password,omitempty"`
 	AccessToken string `json:"access_token"`
-	Ip          string `json:"ip"`
+	Acid        int    `json:"acid"`
 }
 
 func (a *Account) JSONString() (jsonStr string, err error) {
@@ -27,8 +27,4 @@ func (a *Account) JSONBytes() (jsonData []byte, err error) {
 
 func (a *Account) String() string {
 	return fmt.Sprintln("用户名:", a.Username)
-}
-
-func (a *Account) GenUsername() string {
-	return a.Username
 }
