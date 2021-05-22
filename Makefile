@@ -3,11 +3,14 @@
 
 all: darwin
 
-publish:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o bin/srun-mac ./cmd/srun
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/srun-linux ./cmd/srun
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/srun.exe ./cmd/srun
+publish: darwin linux windows arm64 armv7
+
+# for raspbian
+armv7:
 	CGO_ENABLED=0 GOOS=linux GOARM=7 GOARCH=arm go build -o bin/srun-armv7 ./cmd/srun
+
+# for raspberry with arm64 ubuntu
+arm64:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o bin/srun-arm64 ./cmd/srun
 
 darwin:
@@ -26,4 +29,6 @@ clean:
 .PHONY:darwin
 .PHONY:linux
 .PHONY:windows
+.PHONY:armv7
+.PHONY:arm64
 .PHONY:clean

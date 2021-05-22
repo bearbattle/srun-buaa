@@ -9,7 +9,6 @@ import (
 	"github.com/vouv/srun/resp"
 	"github.com/vouv/srun/utils"
 	"net/url"
-	"strconv"
 	"strings"
 )
 
@@ -24,17 +23,18 @@ const (
 
 // 获取acid等
 func Prepare() (int, error) {
-	first, err := get(baseAddr)
-	if err != nil {
-		return 1, err
-	}
-	second, err := get(first.Header.Get("Location"))
-	if err != nil {
-		return 1, err
-	}
-	target := second.Header.Get("location")
-	query, _ := url.Parse(baseAddr + target)
-	return strconv.Atoi(query.Query().Get("ac_id"))
+	return 1, nil
+	// first, err := get(baseAddr)
+	// if err != nil {
+	// 	return 1, err
+	// }
+	// second, err := get(first.Header.Get("Location"))
+	// if err != nil {
+	// 	return 1, err
+	// }
+	// target := second.Header.Get("location")
+	// query, _ := url.Parse(baseAddr + target)
+	// return strconv.Atoi(query.Query().Get("ac_id"))
 }
 
 // api Login

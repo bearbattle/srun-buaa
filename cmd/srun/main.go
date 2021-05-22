@@ -27,12 +27,10 @@ var infoCmd = &cobra.Command{
 	Run:   Info,
 }
 
-var cmdDocs = map[string][]string{
-	"config": {"srun config", "Set Username and Password"},
-	"login":  {"srun [login]", "Login Srun"},
-	"logout": {"srun logout", "Logout Srun"},
-	"info":   {"srun info", "Get Srun Info"},
-	"update": {"srun update", "Update srun"},
+var configCmd = &cobra.Command{
+	Use:   "config",
+	Short: "Config srun",
+	Run:   Config,
 }
 
 var rootCmd = &cobra.Command{
