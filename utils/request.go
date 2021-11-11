@@ -7,12 +7,23 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"strings"
 	"time"
 )
 
 var errParse = errors.New("error-parse")
+
+func init() {
+	client := http.DefaultClient
+	//_ = client
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		panic(err)
+	}
+	client.Jar = jar
+}
 
 // generate callback function string
 func genCallback() string {
@@ -24,7 +35,7 @@ func DoRequest(url string, params url.Values) (*http.Response, error) {
 
 	// add callback
 	params.Add("callback", genCallback())
-	params.Add("_", fmt.Sprint(time.Now().UnixNano()))
+	params.Add("_", fmt.Sprint(time.Now().Unix()))
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
