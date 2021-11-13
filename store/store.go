@@ -1,24 +1,69 @@
 package store
 
 import (
+	"bufio"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/moby/term"
 	log "github.com/sirupsen/logrus"
 	"github.com/vouv/srun/model"
+	"io"
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 )
 
 const accountFileName = "account.json"
 
 var RootPath string
 
-func SetAccount(username, password string) (err error) {
-	return WriteAccount(&model.Account{
-		Username: username,
-		Password: password,
-	})
+func GetAccount() (account *model.Account, err error) {
+	account, err = ReadAccount()
+	if err == nil {
+		return
+	}
+	fmt.Println("没有发现账号配置信息，您可以为本次登录提供账号信息，密码将不会被保存")
+	fmt.Println("如需储存账号信息，请使用 `srun config`")
+	return ReadAccountFromConsole()
+}
+
+func ReadAccountFromConsole() (account *model.Account, err error) {
+	in := os.Stdin
+	fmt.Print("校园网账号:\n>")
+	username := readInput(in)
+
+	// 终端API
+	fd, _ := term.GetFdInfo(in)
+	oldState, err := term.SaveState(fd)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Print("校园网密码(隐私输入):\n>")
+
+	// read in stdin
+	_ = term.DisableEcho(fd, oldState)
+	pwd := readInput(in)
+	_ = term.RestoreTerminal(fd, oldState)
+
+	fmt.Println()
+
+	// trim
+	username = strings.TrimSpace(username)
+	pwd = strings.TrimSpace(pwd)
+	account = &model.Account{Username: username, Password: pwd}
+	return
+}
+
+func readInput(in io.Reader) string {
+	reader := bufio.NewReader(in)
+	line, _, err := reader.ReadLine()
+	if err != nil {
+		panic(err)
+	}
+	return string(line)
 }
 
 func ReadAccount() (account *model.Account, err error) {
@@ -30,6 +75,9 @@ func ReadAccount() (account *model.Account, err error) {
 	defer file.Close()
 
 	err = json.NewDecoder(base64.NewDecoder(base64.RawStdEncoding, file)).Decode(&account)
+	if account.Password == "" {
+		err = errors.New("密码为空")
+	}
 	return
 }
 

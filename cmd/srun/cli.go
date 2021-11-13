@@ -1,14 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"io"
-	"os"
 	"runtime"
-	"strings"
 
-	"github.com/moby/moby/pkg/term"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/vouv/srun/core"
@@ -23,7 +18,7 @@ func Login(cmd *cobra.Command, args []string) {
 }
 
 func LoginE(cmd *cobra.Command, args []string) error {
-	account, err := store.ReadAccount()
+	account, err := store.GetAccount()
 	if err != nil {
 		return err
 	}
@@ -34,7 +29,7 @@ func LoginE(cmd *cobra.Command, args []string) error {
 	}
 	log.Info("登录成功!")
 
-	return store.WriteAccount(account)
+	return nil
 }
 
 func Logout(cmd *cobra.Command, args []string) {
@@ -45,17 +40,18 @@ func Logout(cmd *cobra.Command, args []string) {
 }
 
 func LogoutE(cmd *cobra.Command, args []string) error {
-	var err error
-	account, err := store.ReadAccount()
+	info, err := core.Info()
 	if err != nil {
 		return err
 	}
-
-	_ = core.Logout(account)
-
-	log.Info("注销成功!")
-
-	return store.WriteAccount(account)
+	username := info.UserName
+	if username == "" {
+		log.Info("账号未登录")
+	} else {
+		_ = core.Logout(username)
+		log.Info("注销成功!")
+	}
+	return nil
 }
 
 func Info(cmd *cobra.Command, args []string) {
@@ -82,44 +78,15 @@ func Config(cmd *cobra.Command, args []string) {
 }
 
 func ConfigE(cmd *cobra.Command, args []string) error {
-
-	in := os.Stdin
-	fmt.Print("设置校园网账号:\n>")
-	username := readInput(in)
-
-	// 终端API
-	fd, _ := term.GetFdInfo(in)
-	oldState, err := term.SaveState(fd)
+	account, err := store.ReadAccountFromConsole()
 	if err != nil {
 		return err
 	}
-	fmt.Print("设置校园网密码(隐私输入):\n>")
-
-	// read in stdin
-	_ = term.DisableEcho(fd, oldState)
-	pwd := readInput(in)
-	_ = term.RestoreTerminal(fd, oldState)
-
-	fmt.Println()
-
-	// trim
-	username = strings.TrimSpace(username)
-	pwd = strings.TrimSpace(pwd)
-
-	if err := store.SetAccount(username, pwd); err != nil {
+	if err := store.WriteAccount(account); err != nil {
 		return err
 	}
 	log.Info("账号密码已被保存")
 	return nil
-}
-
-func readInput(in io.Reader) string {
-	reader := bufio.NewReader(in)
-	line, _, err := reader.ReadLine()
-	if err != nil {
-		panic(err)
-	}
-	return string(line)
 }
 
 func VersionString() string {

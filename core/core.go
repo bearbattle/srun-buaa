@@ -106,13 +106,9 @@ func Info() (info *model.InfoResp, err error) {
 }
 
 // api logout
-func Logout(account *model.Account) (err error) {
-	defer func() {
-		account.AccessToken = ""
-		account.Acid = 0
-	}()
+func Logout(username string) (err error) {
 
-	q := model.Logout(account.Username)
+	q := model.Logout(username)
 	ra := resp.ActionResp{}
 	if err = utils.GetJson(baseAddr+portalUrl, q, &ra); err != nil {
 		log.Debug(err)
