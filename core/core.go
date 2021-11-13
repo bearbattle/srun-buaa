@@ -6,19 +6,17 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vouv/srun/hash"
 	"github.com/vouv/srun/model"
-	"github.com/vouv/srun/resp"
 	"github.com/vouv/srun/utils"
 	"net/url"
 	"strings"
 )
 
 const (
-	baseAddr = "https://gw.buaa.edu.cn"
-
+	baseAddr     = "https://gw.buaa.edu.cn"
 	challengeUrl = "/cgi-bin/get_challenge"
 	portalUrl    = "/cgi-bin/srun_portal"
-
-	succeedUrl = "/cgi-bin/rad_user_info"
+	userDmUrl    = "/cgi-bin/rad_user_dm"
+	succeedUrl   = "/cgi-bin/rad_user_info"
 )
 
 // 获取acid等
@@ -72,7 +70,7 @@ func Login(account *model.Account) (err error) {
 	formLogin.Set("chksum", hash.Checksum(formLogin, token))
 
 	// response
-	ra := resp.ActionResp{}
+	ra := model.ActionResp{}
 
 	if err = utils.GetJson(baseAddr+portalUrl, formLogin, &ra); err != nil {
 		log.Debug("request error", err)
@@ -106,11 +104,11 @@ func Info() (info *model.InfoResp, err error) {
 }
 
 // api logout
-func Logout(username string) (err error) {
+func Logout(ip string, username string) (err error) {
 
-	q := model.Logout(username)
-	ra := resp.ActionResp{}
-	if err = utils.GetJson(baseAddr+portalUrl, q, &ra); err != nil {
+	q := model.Logout(ip, username)
+	ra := model.ActionResp{}
+	if err = utils.GetJson(baseAddr+userDmUrl, q, &ra); err != nil {
 		log.Debug(err)
 		err = ErrRequest
 		return
@@ -122,7 +120,7 @@ func Logout(username string) (err error) {
 	return
 }
 
-func getChallenge(username string) (res resp.ChallengeResp, err error) {
+func getChallenge(username string) (res model.ChallengeResp, err error) {
 	qc := model.Challenge(username)
 	err = utils.GetJson(baseAddr+challengeUrl, qc, &res)
 	return

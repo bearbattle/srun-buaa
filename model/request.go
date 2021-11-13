@@ -2,7 +2,10 @@ package model
 
 import (
 	"fmt"
+	"github.com/vouv/srun/hash"
 	"net/url"
+	"strconv"
+	"time"
 )
 
 func Challenge(username string) url.Values {
@@ -26,9 +29,13 @@ func Login(username, password string, acid int) url.Values {
 	}
 }
 
-func Logout(username string) url.Values {
-	return url.Values{
-		"action":   {"logout"},
+func Logout(ip string, username string) url.Values {
+	form := url.Values{
+		"ip":       {ip},
 		"username": {username},
+		"time":     {strconv.FormatInt(time.Now().Unix(), 10)},
+		"unbind":   {"0"},
 	}
+	form.Add("sign", hash.GetLogoutSign(&form))
+	return form
 }

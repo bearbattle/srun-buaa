@@ -44,11 +44,11 @@ func LogoutE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	username := info.UserName
+	ip, username := info.OnlineIP, info.UserName
 	if username == "" {
 		log.Info("账号未登录")
 	} else {
-		_ = core.Logout(username)
+		_ = core.Logout(ip, username)
 		log.Info("注销成功!")
 	}
 	return nil

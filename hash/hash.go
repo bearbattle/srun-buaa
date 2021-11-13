@@ -7,10 +7,9 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"net/url"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func charCodeAt(str string, index int) int {
@@ -120,6 +119,21 @@ func Checksum(data url.Values, token string) string {
 	sh := sha1.New()
 	sh.Write([]byte(sumStr))
 	return hex.EncodeToString(sh.Sum(nil))
+}
+
+func GetLogoutSign(data *url.Values) string {
+	t := data.Get("time")
+	username := data.Get("username")
+	ip := data.Get("ip")
+	unbind := data.Get("unbind")
+	log.Debug("logout time: " + t)
+	message := t + username + ip + unbind + t
+	log.Debug("logout message: " + message)
+	sh := sha1.New()
+	sh.Write([]byte(message))
+	sign := hex.EncodeToString(sh.Sum(nil))
+	log.Debug("logout sign: " + sign)
+	return sign
 }
 
 // 加密信息
